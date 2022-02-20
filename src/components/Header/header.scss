@@ -1,0 +1,63 @@
+.header{
+    width: 100%;
+    position: fixed;
+    height: fit-content;
+    background: #ffffff;
+
+    .inside{
+        padding: 10px 100px;
+        box-shadow: 0 0 2px 1px #00000003, 0 1px 4px 0 #00000005, 0 0px 10px 0 #0000001a;
+
+        .main{
+            display: flex;
+
+            .header-logo{
+                margin: auto;
+                width: 33.33%;
+                margin-left: 0px;
+            }
+
+            .header-search{
+                margin: auto;
+                width: 33.33%;
+
+                .search-bar{
+                    margin: auto;
+                }
+
+            }
+
+            .header-menu{
+                margin: auto;
+                width: 33.33%;
+
+                .profile-menu{
+                    margin: auto;
+                    margin-right: 0px;
+                }
+
+            }
+        }
+    }
+}
+
+
+@media screen and (max-width: "480px") {
+    .header .inside{
+        padding: 20px;
+
+        .main{
+            .header-logo{
+                width: 50%;
+            }
+
+            .header-search{
+                display: none;
+            }
+
+            .header-menu{
+                width: 50%;
+            }
+        }
+    }
+}
