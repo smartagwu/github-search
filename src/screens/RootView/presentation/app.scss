@@ -1,0 +1,54 @@
+.App {
+  height: fit-content;
+  position: relative;
+
+  .waiting-message{
+    height: 100vh;
+    position: relative;
+
+    p {
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      text-align: center;
+      position: absolute;
+      width: fit-content;
+      height: fit-content;
+    }
+  }
+
+  .text-title{
+    font-size: 24px;
+    font-family: Mark-Pro-Bold;
+  }
+
+  .text-subtitle{
+    font-size: 18px;
+    font-family: Mark-Pro-Bold;
+  }
+
+  .text-normal{
+    font-size: 15px;
+    color: #00000091;
+    font-family: Mark-Pro-Regular;
+  }
+
+  .text-subtext{
+    font-size: 13px;
+    color: #00000091;
+    font-family: Mark-Pro-Regular;
+  }
+
+  .border-red{
+    border: 1px solid red;
+  }
+}
+
+
+@media screen and (max-width: "480px"){
+    .App{
+        padding: 0;
+    }
+}

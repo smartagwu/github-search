@@ -1,13 +1,39 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+html, body, #root{
+  height: 100%;
+  width: 100%;
+  background: #f7f9fa;
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: Mark-Pro-Regular;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@font-face {
+  font-family: "Mark-Pro-Regular";
+  src: url("./assets/fonts/Mark_Pro_Regular.ttf");
+}
+
+@font-face {
+  font-family: "Mark-Pro-Medium";
+  src: url("./assets/fonts/Mark_Pro_Medium.ttf");
+}
+
+@font-face {
+  font-family: "Mark-Pro-Bold";
+  src: url("./assets/fonts/Mark_Pro_Bold.ttf");
+}
+
+@font-face {
+  font-family: "Mark-Pro-Heavy";
+  src: url("./assets/fonts/Mark_Pro_Heavy.ttf");
 }
