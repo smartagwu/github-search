@@ -1,0 +1,48 @@
+.search-bar{
+    display: flex;
+    height: fit-content;
+    flex-direction: row-reverse;
+    border: 1px solid #0000001f;
+    transition: all .3s ease-in-out;
+
+    svg{
+        margin: auto;
+    }
+
+    .input{
+        width: 100%;
+        margin: auto;
+        height: fit-content;
+        padding-right: 10px;
+
+        input{
+            width: 100%;
+            outline: none;
+            border: none;
+            background-color: transparent;
+
+            &:hover, &:focus, &:active {
+                outline: none;
+                border: none;
+            }
+        }
+    }
+}
+
+.input-small{
+    padding: 5px 10px;
+    border-radius: 20px;
+
+    svg{
+        height: 25px;
+    }
+}
+
+.input-large{
+    padding: 10px 20px;
+    border-radius: 30px;
+
+    svg{
+        height: 30px;
+    }
+}
