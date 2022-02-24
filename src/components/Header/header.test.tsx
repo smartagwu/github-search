@@ -1,8 +1,8 @@
 import Header from ".";
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../utils/testUtils";
 
 test("Renders header component properly", () => {
-  render(<Header showLogo={true} profile={{ name: "Smart Agwu" }} showSearchInput={true} />);
+  render(<Header showLogo={true} showSearchInput={true} />);
 
   const search = screen.getByTestId("search_bar_test_id");
   expect(search).toBeInTheDocument();

@@ -1,23 +1,62 @@
-import React, { ChangeEvent } from "react";
-import "./Header.scss";
-import ProfileMenu, { UserProfileProps } from "../Menu";
+import React, { useEffect } from "react";
+import "./header.scss";
+import ProfileMenu from "../Menu";
 import Logo from "../Logo";
-import Search from "../Search";
+import SearchBar from "../Search";
+import { connect } from "react-redux";
+import { AppState } from "../../store/RootReducer";
+import { SearchRequest } from "../../screens/GithubResults/domain/SearchRepository";
+import {
+  triggerSearchUser,
+  triggerSearchRepository
+} from "../../screens/GithubResults/presentation/store/actions";
 
-interface Props {
+interface HeaderStoreStateProps {
+  isMobile: boolean;
+  accessToken: string | null;
+  userError: string | null;
+  repositoryError: string | null;
+}
+
+interface HeaderStoreDispatchProps {
+  searchUser: (request: SearchRequest) => void;
+  searchRepository: (request: SearchRequest) => void;
+}
+
+interface OwnProps {
   showLogo: boolean;
-  profile: UserProfileProps;
   showSearchInput: boolean;
 }
 
-function Header(props: Props) {
-  const { showLogo, showSearchInput, profile } = props;
-  const isMobile = window.innerWidth <= 480;
+type Props = HeaderStoreStateProps & HeaderStoreDispatchProps & OwnProps;
 
-  const searchItem = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.currentTarget.value);
-    return;
+function Header(props: Props) {
+  const { showLogo, showSearchInput, isMobile } = props;
+
+  const searchGithub = (queryString: string) => {
+    const { searchUser, searchRepository, accessToken } = props;
+    const request: SearchRequest = {
+      queryString,
+      endCursor: "",
+      getFirst: true,
+      getLast: false,
+      accessToken: accessToken || ""
+    };
+    searchUser(request);
+    searchRepository(request);
   };
+
+  useEffect(() => {
+    const { userError, repositoryError } = props;
+    if (userError) {
+      alert(userError);
+      return;
+    }
+    if (repositoryError) {
+      alert(repositoryError);
+      return;
+    }
+  });
 
   return (
     <div className="header">
@@ -27,10 +66,10 @@ function Header(props: Props) {
             {showLogo && <Logo height={isMobile ? "30px" : "40px"} />}
           </div>
           <div className="header-search">
-            {showSearchInput && <Search style={{ width: "100%" }} callback={searchItem} />}
+            {showSearchInput && <SearchBar style={{ width: "100%" }} callback={searchGithub} />}
           </div>
           <div className="header-menu">
-            <ProfileMenu name={profile.name} />
+            <ProfileMenu />
           </div>
         </div>
       </div>
@@ -38,4 +77,24 @@ function Header(props: Props) {
   );
 }
 
-export default Header;
+const mapStateToProps = (state: AppState): HeaderStoreStateProps => {
+  return {
+    isMobile: state.app.isMobile,
+    accessToken: state.login.accessToken,
+    userError: state.search.searchUserError,
+    repositoryError: state.search.searchRepositoryError
+  };
+};
+
+const mapDispatchToProps = (dispatch: (action: any) => void): HeaderStoreDispatchProps => {
+  return {
+    searchUser: (request: SearchRequest) => {
+      dispatch(triggerSearchUser(request));
+    },
+    searchRepository: (request: SearchRequest) => {
+      dispatch(triggerSearchRepository(request));
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);
