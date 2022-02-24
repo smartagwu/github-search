@@ -1,55 +1,44 @@
-import React, { ChangeEvent, CSSProperties, useEffect, useRef } from "react";
-import "./SearchBar.scss";
+import React, { ChangeEvent, CSSProperties, KeyboardEvent, useEffect, useState } from "react";
+import "./search.scss";
 import { ReactComponent as SearchImage } from "./images/search.svg";
 
 export enum SearchBarSize {
-  "input-small",
-  "input-large"
+  small = "input-small",
+  large = "input-large"
 }
 
 type SearchBarSizeProps = "input-small" | "input-large";
 
-interface SearchBarProps {
+interface OwnProps {
   name?: string;
   placeholder?: string;
   style?: CSSProperties;
   size?: SearchBarSizeProps;
-  callback?: (event: ChangeEvent<HTMLInputElement>) => void;
+  callback: (inputValue: string) => void;
+  onEnterKeyPressed?: () => void;
 }
 
-function Search(props: SearchBarProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const { size, name, style, placeholder, callback } = props;
+type Props = OwnProps;
 
-  // async function onChange(e): Promise<any> {
-  //   var value = e.target.value;
-  //   var userSearchResult = await new Utils().searchUser(value, accessToken, true, false, "");
-  //   var repositorySearchResult = await new Utils().searchRepository(
-  //     value,
-  //     accessToken,
-  //     true,
-  //     false,
-  //     ""
-  //   );
+function Search(props: Props) {
+  const { size, name, style, placeholder } = props;
+  const [_border, setBorder] = useState("1px solid #0000001f");
 
-  //   if (!userSearchResult || !repositorySearchResult) {
-  //     userSearchResult = {};
-  //     repositorySearchResult = {};
-  //   }
+  const onSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { callback } = props;
+    const inputValue = event.currentTarget.value;
+    callback(inputValue);
+  };
 
-  //   callback(repositorySearchResult, userSearchResult, value);
-  // }
+  const onEnterKey = (event: KeyboardEvent<HTMLInputElement>) => {
+    const { onEnterKeyPressed } = props;
+    if (event.key === "Enter" && onEnterKeyPressed) onEnterKeyPressed();
+  };
 
   useEffect(() => {
-    const container = containerRef.current;
-
-    container?.addEventListener("focus", () => {
-      if (container) container.style.border = "1px solid #000000";
-    });
-
-    container?.addEventListener("blur", () => {
-      if (container) container.style.border = "1px solid #0000001f";
-    });
+    const container = document.getElementById("search-container");
+    container?.addEventListener("focus", () => setBorder("1px solid #00000042"));
+    container?.addEventListener("blur", () => setBorder("1px solid #0000001f"));
 
     return () => {
       container?.removeEventListener("focus", () => {});
@@ -58,15 +47,20 @@ function Search(props: SearchBarProps) {
   });
 
   return (
-    <div className={`search-bar ${size || SearchBarSize["input-small"].toString}`} style={style}>
+    <div
+      className={`search-bar ${size || SearchBarSize.small}`}
+      style={{ ...style, border: _border }}>
       <SearchImage />
       <div className="input">
         <input
           type="text"
-          onChange={callback}
+          onChange={onSearchInputChange}
+          id="search-container"
           className="text-normal"
+          onKeyUp={onEnterKey}
+          style={{ height: size || "auto" }}
           name={name || "search bar input"}
-          placeholder={placeholder || "Search..."}
+          placeholder={placeholder || "Search github..."}
           data-testid="search_bar_test_id"
         />
       </div>
