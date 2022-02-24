@@ -1,29 +1,40 @@
-import React, { useReducer, useEffect } from "react";
-import "./Pagination.scss";
-import arrowLeftWhite from "./image/arrow_left_white.svg";
+import React, { useEffect, useState } from "react";
+import "./pagination.scss";
+import arrowLeftWhite from "./images/arrow_left_grey.svg";
 import arrowLeftGrey from "./images/arrow_left_grey.svg";
 import arrowRightGrey from "./images/arrow_right_grey.svg";
 import arrowRightWhite from "./images/arrow_right_white.svg";
-import { ButtonProps, PaginationProps, DispatchActionInterface, ButtonAction } from "./types";
+import {
+  ButtonProps,
+  Props,
+  ButtonAction,
+  PaginationStoreDispatchProps,
+  PaginationStoreStateProps
+} from "./types";
 import PaginationButton from "./PaginationButton";
+import { connect } from "react-redux";
+import { SearchRequest } from "../../screens/GithubResults/domain/SearchRepository";
+import {
+  triggerSearchUser,
+  triggerSearchRepository
+} from "../../screens/GithubResults/presentation/store/actions";
+import { AppState } from "../../store/RootReducer";
 
 const initialState = (resultCount: number): ButtonProps => {
+  const end = resultCount > 50 ? 5 : Math.ceil(resultCount / 10);
+  const currentSet = 1;
   return {
-    next: resultCount > 5,
+    next: end * 10 < resultCount,
     previous: false,
-    currentSet: 1,
+    currentSet,
     activePageId: "page-1",
     start: 1,
-    end: resultCount < 5 ? resultCount : 5
+    end
   };
 };
 
-const butonReducer = (state: ButtonProps, action: DispatchActionInterface): ButtonProps => {
-  const { payload } = action;
-  return { ...state, ...payload };
-};
-
-const pagesButtons = (start: number, end: number, onClick: (i: number) => void): JSX.Element[] => {
+const pagesButtons = (props: ButtonProps, onClick: (index: number) => void): JSX.Element[] => {
+  const { start, end } = props;
   var pages = [];
   for (let i = start; i <= end; i++) {
     const page = (
@@ -36,127 +47,100 @@ const pagesButtons = (start: number, end: number, onClick: (i: number) => void):
   return pages;
 };
 
-const Pagination = (props: PaginationProps) => {
-  const { resultCount, pageInfo, callback, showUsers } = props;
-  const [buttonState, dispatch] = useReducer(butonReducer, null, () => initialState(resultCount));
+const Pagination = (props: Props) => {
+  const { resultCount } = props;
+  const [buttonProps, setButtonProps] = useState(initialState(resultCount));
+  const { start, end, next, previous } = buttonProps;
 
   function switchPageSet(action: ButtonAction): void {
-    const { previous, next, currentSet, activePageId } = buttonState;
+    const { previous, next, currentSet, activePageId } = buttonProps;
     document.getElementById(activePageId)?.classList.remove("active");
-    var newSet: number = currentSet;
+    var _newSet = currentSet;
+    var _newResultCount = resultCount;
+    var _newEnd = end;
+    var _newStart = start;
 
-    if (action === "next" && next) newSet = currentSet + 1;
-    else if (action === "previous" && previous) newSet = currentSet - 1;
-
-    var start = 5 * (newSet - 1) + 1;
-    var end = 5 * newSet;
-
-    if (start + 5 > resultCount) {
-      start = resultCount - 4;
-      end = resultCount;
+    if (action === "next" && next) {
+      _newSet = currentSet + 1;
+      _newResultCount = resultCount - end * 10;
+      _newEnd = _newResultCount > 50 ? _newSet * 5 : Math.ceil(_newResultCount / 10) + end;
+      _newStart = _newEnd - 4;
+    } else if (action === "previous" && previous) {
+      _newSet = currentSet - 1;
+      _newStart = start - 5 < 1 ? 1 : start - 5;
+      _newEnd = _newStart + 4;
     }
 
-    dispatch({
-      payload: {
-        ...buttonState,
-        end,
-        start,
-        currentSet: newSet,
-        previous: start > 1,
-        next: end < resultCount
-      }
+    setButtonProps((props) => {
+      return {
+        ...props,
+        end: _newEnd,
+        start: _newStart,
+        currentSet: _newSet,
+        previous: _newStart > 1,
+        next: _newEnd * 10 < resultCount
+      };
     });
   }
 
-  async function fetchPage(number: number) {
-    // var response = null;
-    // var utils = new Utils();
-    // if (showUsers) {
-    //   if (number === 1) {
-    //     response = await utils.searchUser(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       true,
-    //       false,
-    //       ""
-    //     );
-    //   } else if (number === resultCount) {
-    //     response = await utils.searchUser(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       false,
-    //       true,
-    //       ""
-    //     );
-    //   } else {
-    //     response = await utils.searchUser(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       false,
-    //       false,
-    //       pageInfo.userEndCursor
-    //     );
-    //   }
-    // } else {
-    //   if (number === 1) {
-    //     response = await utils.searchRepository(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       true,
-    //       false,
-    //       ""
-    //     );
-    //   } else if (number === resultCount) {
-    //     response = await utils.searchRepository(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       false,
-    //       true,
-    //       ""
-    //     );
-    //   } else {
-    //     response = await utils.searchRepository(
-    //       pageInfo.queryString,
-    //       pageInfo.accessToken,
-    //       false,
-    //       false,
-    //       pageInfo.repositoryEndCursor
-    //     );
-    //   }
-    // }
-    // const id = "page-" + number;
-    // document.getElementById(id)?.classList.add("active");
-    // document.getElementById(buttonState.activePageId)?.classList.remove("active");
-    // dispatch({ payload: { ...buttonState, activePageId: id } });
-    // if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
-    // callback(response);
+  async function searchGithub(index: number) {
+    if (props.isUser) {
+      const { queryString, searchUser, accessToken, usersEndCursor } = props;
+      const request: SearchRequest = {
+        endCursor: index > 1 && index < resultCount ? usersEndCursor : "",
+        getFirst: index === 1 ? true : false,
+        getLast: index === resultCount ? true : false,
+        queryString: queryString || "",
+        accessToken: accessToken || ""
+      };
+      searchUser(request);
+    } else {
+      const { queryString, searchRepository, accessToken, repositoriesEndCursor } = props;
+      const request: SearchRequest = {
+        endCursor: index > 1 && index < resultCount ? repositoriesEndCursor : "",
+        getFirst: index === 1 ? true : false,
+        getLast: index === resultCount ? true : false,
+        queryString: queryString || "",
+        accessToken: accessToken || ""
+      };
+      searchRepository(request);
+    }
+
+    const id = `page-${index}`;
+    document.getElementById(id)?.classList.add("active");
+    document.getElementById(buttonProps.activePageId)?.classList.remove("active");
+    setButtonProps((props) => {
+      return { ...props, activePageId: id };
+    });
+    if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
   }
 
   useEffect(() => {
-    const { activePageId: id } = buttonState;
+    const { activePageId: id } = buttonProps;
     document.getElementById(id)?.classList.add("active");
-  }, [buttonState]);
+  }, [buttonProps]);
 
   return (
     <>
-      {resultCount > 0 && (
+      {resultCount && resultCount > 10 && (
         <div className="pagination" data-testid="pagination_id">
           <PaginationButton
             id="previous_button"
             alt="arrow left icon"
-            callback={() => switchPageSet("previous")}
-            className={buttonState.previous ? "active" : ""}
-            icon={buttonState.previous ? arrowLeftWhite : arrowLeftGrey}
+            callback={() => previous && switchPageSet("previous")}
+            className={previous ? "active" : ""}
+            icon={previous ? arrowLeftWhite : arrowLeftGrey}
           />
 
-          <ul>{pagesButtons(buttonState.start, buttonState.end, fetchPage)}</ul>
+          <ul>{pagesButtons(buttonProps, searchGithub)}</ul>
 
           <PaginationButton
             id="next_button"
             alt="arrow right icon"
-            callback={() => switchPageSet("next")}
-            className={buttonState.next ? "active" : ""}
-            icon={buttonState.next ? arrowRightWhite : arrowRightGrey}
+            testId="pagination-next"
+            callback={() => next && switchPageSet("next")}
+            className={next ? "active" : ""}
+            icon={next ? arrowRightWhite : arrowRightGrey}
           />
         </div>
       )}
@@ -164,4 +148,24 @@ const Pagination = (props: PaginationProps) => {
   );
 };
 
-export default Pagination;
+const mapStateToProps = (state: AppState): PaginationStoreStateProps => {
+  return {
+    queryString: state.search.queryString,
+    accessToken: state.login.accessToken,
+    usersEndCursor: state.search.users?.pageInfo.endCursor || "",
+    repositoriesEndCursor: state.search.repositories?.pageInfo.endCursor || ""
+  };
+};
+
+const mapDispatchToProps = (dispatch: (action: any) => void): PaginationStoreDispatchProps => {
+  return {
+    searchUser: (request: SearchRequest) => {
+      dispatch(triggerSearchUser(request));
+    },
+    searchRepository: (request: SearchRequest) => {
+      dispatch(triggerSearchRepository(request));
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Pagination);

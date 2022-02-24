@@ -1,3 +1,5 @@
+import { SearchRequest } from "../../screens/GithubResults/domain/SearchRepository";
+
 export interface ButtonProps {
   end: number;
   start: number;
@@ -7,8 +9,8 @@ export interface ButtonProps {
   activePageId: string;
 }
 
-export interface PaginationProps {
-  showUsers?: boolean;
+export interface OwnProps {
+  isUser: boolean;
   pageInfo?: PageInfo;
   resultCount: number;
   callback?: () => void;
@@ -21,8 +23,23 @@ interface PageInfo {
   repositoryEndCursor: string;
 }
 
+export interface PaginationStoreStateProps {
+  queryString: string | null;
+  accessToken: string | null;
+
+  usersEndCursor: string;
+  repositoriesEndCursor: string;
+}
+
+export interface PaginationStoreDispatchProps {
+  searchUser: (request: SearchRequest) => void;
+  searchRepository: (request: SearchRequest) => void;
+}
+
 export interface DispatchActionInterface {
   payload: ButtonProps;
 }
 
 export type ButtonAction = "previous" | "next";
+
+export type Props = PaginationStoreStateProps & PaginationStoreDispatchProps & OwnProps;
