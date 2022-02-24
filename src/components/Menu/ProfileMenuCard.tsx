@@ -1,18 +1,27 @@
-import React, { MutableRefObject } from "react";
+import React, { CSSProperties } from "react";
+import { connect } from "react-redux";
+import { resetGithubResults } from "../../screens/GithubResults/presentation/store/actions";
+import { resetLogin } from "../../screens/Login/presentation/store/actions";
+import { resetApp } from "../../screens/RootView/presentation/store/actions";
 
 interface MenuItemsProps {
   name: string;
-  style?: object;
+  style?: CSSProperties;
   callback?: () => void;
 }
 
-interface Props {
-  triggerLogout?: () => void;
-  ref: MutableRefObject<HTMLUListElement | null>;
+interface MenuCardStoreDispatchProps {
+  triggerLogout: () => void;
 }
 
+interface OwnProps {
+  style?: CSSProperties;
+}
+
+type Props = MenuCardStoreDispatchProps & OwnProps;
+
 function ProfileMenuCard(props: Props) {
-  const { ref, triggerLogout } = props;
+  const { triggerLogout, style } = props;
   const menuItems: MenuItemsProps[] = [
     { name: "Profile" },
     {
@@ -23,7 +32,7 @@ function ProfileMenuCard(props: Props) {
   ];
 
   return (
-    <ul ref={ref} className="card">
+    <ul style={style} className="card">
       {menuItems.map((item, index) => {
         return (
           <li onClick={item.callback} key={`menu-${index}`}>
@@ -35,4 +44,14 @@ function ProfileMenuCard(props: Props) {
   );
 }
 
-export default ProfileMenuCard;
+const mapDispatchToProps = (dispatch: (action: any) => void): MenuCardStoreDispatchProps => {
+  return {
+    triggerLogout: () => {
+      dispatch(resetLogin);
+      dispatch(resetGithubResults);
+      dispatch(resetApp());
+    }
+  };
+};
+
+export default connect(null, mapDispatchToProps)(ProfileMenuCard);

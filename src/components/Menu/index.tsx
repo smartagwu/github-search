@@ -1,30 +1,33 @@
-import React, { useRef, useState } from "react";
-import "./ProfileMenu.scss";
+import React, { useState } from "react";
+import "./menu.scss";
+import { connect } from "react-redux";
 import { ReactComponent as DropdownIcon } from "./images/drop-down.svg";
 import ProfileMenuCard from "./ProfileMenuCard";
+import { UserProfile } from "../../screens/Login/domain/LoginRepository";
+import { AppState } from "../../store/RootReducer";
 
-export interface UserProfileProps {
-  name: string;
-  avatarUrl?: string;
+interface ProfileMenuStoreStateProps {
+  userProfile: UserProfile | null;
 }
 
-type Props = UserProfileProps;
+type Props = ProfileMenuStoreStateProps;
 
 function ProfileMenu(props: Props) {
-  const { name, avatarUrl } = props;
+  const { userProfile } = props;
   const [showMenu, setShowMenu] = useState(false);
-  const menuCardRef = useRef<HTMLUListElement | null>(null);
+  const [_propertyTop, setTop] = useState("50px");
+  const [_propertyOpacity, setOpacity] = useState(0);
 
   function toggleMenuCard() {
     if (showMenu) {
-      menuCardRef.current?.style.setProperty("top", "50px");
-      menuCardRef.current?.style.setProperty("opacity", "0");
+      setTop("50px");
+      setOpacity(0);
       setTimeout(() => setShowMenu(!showMenu), 500);
     } else {
       setShowMenu(!showMenu);
       setTimeout(() => {
-        menuCardRef.current?.style.setProperty("top", "40px");
-        menuCardRef.current?.style.setProperty("opacity", "1");
+        setTop("50px");
+        setOpacity(1);
       }, 100);
     }
   }
@@ -33,14 +36,20 @@ function ProfileMenu(props: Props) {
     <div className="profile-menu">
       <div className="menu" data-testid="menu-card-id" onClick={toggleMenuCard}>
         <DropdownIcon />
-        {showMenu && <ProfileMenuCard ref={menuCardRef} />}
+        {showMenu && <ProfileMenuCard style={{ top: _propertyTop, opacity: _propertyOpacity }} />}
       </div>
       <div className="profile">
-        <img src={avatarUrl} alt="User profile" />
-        <p>{name}</p>
+        <img src={userProfile?.avatarUrl || ""} alt="User profile" />
+        <p>{userProfile?.name || ""}</p>
       </div>
     </div>
   );
 }
 
-export default ProfileMenu;
+const mapStateToProps = (state: AppState): ProfileMenuStoreStateProps => {
+  return {
+    userProfile: state.login.userProfile
+  };
+};
+
+export default connect(mapStateToProps)(ProfileMenu);
