@@ -1,0 +1,45 @@
+.search-container{
+    height: 100%;
+    width: 100%;
+    position: relative;
+
+    .search{
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 500px;
+        margin: auto;
+        position: absolute;
+        height: fit-content;
+
+        .logo{
+            margin: auto;
+            width: 230px;
+        }
+
+        .search-bar{
+            margin: 20px 0px;
+        }
+
+        .button-content{
+            margin: auto;
+            width: fit-content;
+        }
+    }
+}
+
+@media screen and (max-width: "480px"){
+    .search-container .search{
+        width: 100%;
+
+        .search-bar{
+            max-width: 250px;
+            margin: 20px auto;
+        }
+
+        .logo{
+            width: 170px;
+        }
+    }
+}
