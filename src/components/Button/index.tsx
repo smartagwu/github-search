@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
-import { memoComponent } from "../memo-component";
-import "./Button.scss";
+import { memoComponent } from "../../utils/memoComponent";
+import "./button.scss";
 
 interface OwnProps {
   id: string;
